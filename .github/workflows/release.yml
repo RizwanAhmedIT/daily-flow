@@ -2,8 +2,10 @@ name: Build and Release APK
 
 on:
   push:
+    branches:
+      - "main"
     tags:
-      - 'v*'
+      - "v*"
 
 jobs:
   build:
@@ -16,14 +18,14 @@ jobs:
       - name: Setup Java
         uses: actions/setup-java@v3
         with:
-          distribution: 'zulu'
-          java-version: '17'
+          distribution: "zulu"
+          java-version: "17"
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.16.0' # Adjust to your project's version
-          channel: 'stable'
+          flutter-version: "3.16.0" # Adjust to your project's version
+          channel: "stable"
 
       - name: Install Dependencies
         run: flutter pub get
@@ -33,21 +35,9 @@ jobs:
 
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v2
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          files: build/app/outputs/flutter-apk/app-release.apk
+          tag_name: ${{ github.ref_name }}
+          release_name: Release ${{ github.ref_name }}
           draft: false
-          prerelease: false
-
-      - name: Upload APK Asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: build/app/outputs/flutter-apk/app-release.apk
-          asset_name: daily-flow-release.apk
-          asset_content_type: application/vnd.android.package-archive
